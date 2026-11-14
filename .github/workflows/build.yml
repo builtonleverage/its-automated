@@ -1,0 +1,79 @@
+name: Build firmware
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-${{ hashFiles('platformio.ini') }}
+      - name: Unit test sunrise/sunset maths
+        run: g++ -std=c++17 -o /tmp/test_sun test/test_sun.cpp && /tmp/test_sun
+      - name: Build firmware
+        run: |
+          pip install platformio
+          pio run
+      - name: Assemble web flasher
+        run: |
+          mkdir -p site
+          B=.pio/build/esp32dev
+          cp $B/bootloader.bin $B/partitions.bin $B/firmware.bin site/
+          cp ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin site/
+          cp flasher/index.html site/
+          cat > site/manifest.json <<JSON
+          {
+            "name": "It's Automated",
+            "version": "${GITHUB_SHA::7}",
+            "new_install_prompt_erase": true,
+            "builds": [{
+              "chipFamily": "ESP32",
+              "parts": [
+                { "path": "bootloader.bin", "offset": 4096 },
+                { "path": "partitions.bin", "offset": 32768 },
+                { "path": "boot_app0.bin", "offset": 57344 },
+                { "path": "firmware.bin", "offset": 65536 }
+              ]
+            }]
+          }
+          JSON
+          ls -la site
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: site/*.bin
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  # Publishes the one-click web flasher. Needs Settings > Pages > Source = "GitHub Actions".
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

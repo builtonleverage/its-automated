@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>It's Automated</title>
+<meta name="theme-color" content="#14110f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Automated">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/icon-180.png">
+<style>
+:root{
+  --bg:#14110f; --surface:#1f1b18; --raised:#2a2420; --line:#3a322c;
+  --text:#f4ede4; --muted:#a39788; --accent:#ffb347; --accent-ink:#2b1a00; --danger:#ff7a6b;
+  --glow:255,179,71; --level:.6;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 92px);
+  max-width:520px;margin:0 auto}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+h1{font-size:22px;margin:0;letter-spacing:-.02em}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:26px 2px 10px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px}
+.sub{color:var(--muted);font-size:13px}
+.sun{text-align:right;color:var(--muted);font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums}
+
+/* lamp orb */
+.stage{display:flex;flex-direction:column;align-items:center;padding:26px 0 8px}
+.orb{width:168px;height:168px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 50% 42%, rgba(var(--glow),calc(.35 + var(--level)*.65)) 0%, rgba(var(--glow),calc(.12 + var(--level)*.5)) 45%, rgba(var(--glow),.06) 72%);
+  box-shadow:0 0 calc(30px + var(--level)*80px) rgba(var(--glow),calc(.12 + var(--level)*.38)), inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:box-shadow .35s, background .35s, transform .12s}
+.orb:active{transform:scale(.96)}
+.orb.off{--level:0;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.orb svg{position:absolute;inset:0;margin:auto;width:44px;height:44px;stroke:var(--accent-ink);opacity:.75}
+.orb.off svg{stroke:var(--muted)}
+.status{margin-top:18px;font-size:17px;font-weight:600}
+.status small{display:block;font-weight:400;color:var(--muted);font-size:13px;text-align:center;margin-top:2px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.card + .card{margin-top:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px}
+.label b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:none;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:5px;background:var(--track,var(--raised))}
+input[type=range]::-moz-range-track{height:10px;border-radius:5px;background:var(--track,var(--raised))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;margin-top:-9px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border:0;border-radius:50%;background:#fff}
+.bright{--track:linear-gradient(90deg,#3a322c,#ffd9a0)}
+.warm{--track:linear-gradient(90deg,#ffab5e,#fff3e0 55%,#cfe2ff)}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
+.chips.scroll::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:44px;padding:0 16px;border-radius:22px;background:var(--surface);border:1px solid var(--line);font-size:15px;white-space:nowrap}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.chip.ghost{border-style:dashed;color:var(--muted)}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.14)}
+
+.btn{min-height:48px;border-radius:14px;padding:0 18px;background:var(--accent);color:var(--accent-ink);font-weight:600;width:100%}
+.btn.sec{background:var(--raised);color:var(--text)}
+.btn.danger{background:none;color:var(--danger);border:1px solid var(--line)}
+.btn.small{width:auto;min-height:40px;font-size:14px;padding:0 14px}
+.btns{display:flex;gap:10px;margin-top:14px}
+
+.routine{display:flex;align-items:center;gap:12px}
+.routine .info{flex:1;min-width:0;text-align:left}
+.routine .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.routine .meta{font-size:13px;color:var(--muted)}
+.toggle{flex:none;width:52px;height:32px;border-radius:16px;background:var(--raised);position:relative;transition:background .2s}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle.on{background:var(--accent)}
+.toggle.on::after{transform:translateX(20px)}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.empty p{margin:0 0 16px}
+
+.field{margin-bottom:14px}
+.field > span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input[type=text],.field input[type=time],.field input[type=number],.field select{
+  width:100%;min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:0 12px;font-size:16px}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{flex:1;min-height:42px;border-radius:9px;font-size:15px;color:var(--muted)}
+.seg button.on{background:var(--raised);color:var(--text);font-weight:600}
+.days{display:flex;gap:6px}
+.days button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);font-size:14px;color:var(--muted)}
+.days button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.kv{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;color:var(--muted)}
+.kv b{color:var(--text);font-weight:500}
+
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;
+  background:rgba(20,17,15,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
+  padding:6px 0 calc(env(safe-area-inset-bottom) + 6px)}
+nav button{flex:1;max-width:170px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:var(--muted)}
+nav button.on{color:var(--accent)}
+nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.scrim.open{display:flex}
+.sheet{width:100%;max-width:520px;max-height:92dvh;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;
+  padding:18px 16px calc(env(safe-area-inset-bottom) + 18px)}
+.sheet h3{margin:0 0 16px;font-size:19px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 96px);transform:translateX(-50%);background:#fff;color:#14110f;
+  padding:10px 16px;border-radius:12px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.banner{background:#3b2a12;border:1px solid #6b4a17;color:#ffd9a0;border-radius:14px;padding:10px 14px;font-size:14px;margin:10px 0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main id="view"><div class="empty"><p>Connecting…</p></div></main>
+
+<nav>
+  <button data-tab="lamp" class="on"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.3 1.1 2.2h5c.1-.9.5-1.700 1.100-2.200A6 6 0 0 0 12 3z"/></svg>Lamp</button>
+  <button data-tab="routines"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Routines</button>
+  <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+</nav>
+
+<div class="scrim" id="scrim"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+const WIZ_SCENES = [[6,'Cozy'],[11,'Warm white'],[12,'Daylight'],[13,'Cool white'],[14,'Night light'],[15,'Focus'],[16,'Relax'],
+  [18,'TV time'],[29,'Candlelight'],[30,'Golden white'],[5,'Fireplace'],[3,'Sunset'],[1,'Ocean'],[2,'Romance'],[7,'Forest'],
+  [4,'Party'],[9,'Wake up'],[10,'Bedtime']];
+const COLORS = [[255,60,40],[255,120,20],[255,200,40],[60,220,90],[40,200,220],[60,110,255],[150,80,255],[255,70,170]];
+const CITIES = [['Hyderabad',17.385,78.4867],['Chandigarh / Zirakpur',30.6425,76.8173],['Delhi',28.6139,77.209],['Mumbai',19.076,72.8777],
+  ['Bengaluru',12.9716,77.5946],['Chennai',13.0827,80.2707],['Kolkata',22.5726,88.3639],['Pune',18.5204,73.8567]];
+const DAYS = ['S','M','T','W','T','F','S'];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S = null, tab = 'lamp', sel = 'all', holdUntil = 0, failures = 0, sendTimer = null;
+
+async function api(path, body) {
+  const res = await fetch(path, body === undefined ? {} : {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok === false) throw new Error(data.error || 'Request failed');
+  return data;
+}
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+async function act(fn, okMsg) {
+  try { await fn(); if (okMsg) toast(okMsg); } catch (e) { toast(e.message); }
+  await refresh(true);
+}
+async function refresh(force) {
+  try { S = await api('/api/state'); failures = 0; }
+  catch (e) { failures++; if (!S || failures > 2) { $('#view').innerHTML = `<div class="empty"><p>Can't reach the bridge.<br>Check you're on home Wi-Fi and the ESP32 is powered.</p></div>`; S = null; } return; }
+  if (S.lamps.length && sel !== 'all' && !S.lamps.find(l => l.mac === sel)) sel = 'all';
+  if ($('#scrim').classList.contains('open') && !force) return;
+  if (tab === 'lamp' && Date.now() < holdUntil && !force) { paintOrb(); return; }
+  render();
+}
+
+/* ---------- lamp helpers ---------- */
+const targets = () => S.lamps.filter(l => sel === 'all' || l.mac === sel);
+const shown = () => targets().find(l => l.online) || targets()[0];
+function kelvinRgb(k) {
+  const t = Math.min(1, Math.max(0, (k - 2700) / 3800)), a = [255,170,90], b = [215,232,255];
+  return a.map((v, i) => Math.round(v + (b[i] - v) * t));
+}
+function lampRgb(l) {
+  if (l.r !== undefined) return [l.r, l.g, l.b].map(v => Math.max(v, 40));
+  if (l.temp) return kelvinRgb(l.temp);
+  return [255,179,71];
+}
+function sceneName(id) { const s = WIZ_SCENES.find(x => x[0] === id); return s ? s[1] : 'Scene ' + id; }
+function lampSummary(l) {
+  if (!l.online) return 'Offline';
+  if (!l.state) return 'Off';
+  const look = l.sceneId ? sceneName(l.sceneId) : l.r !== undefined ? 'Colour' : l.temp ? l.temp + 'K' : '';
+  return `On · ${l.dimming}%${look ? ' · ' + look : ''}`;
+}
+function paintOrb() {
+  const l = S && shown(), orb = $('#orb'); if (!l || !orb) return;
+  const on = l.online && l.state;
+  orb.classList.toggle('off', !on);
+  orb.style.setProperty('--glow', lampRgb(l).join(','));
+  orb.style.setProperty('--level', on ? (l.dimming / 100).toFixed(2) : 0);
+  orb.setAttribute('aria-pressed', on);
+  let sub = '';
+  if (!l.online) sub = 'Check the wall switch and Wi-Fi';
+  else if (l.fade) sub = l.fade.off ? `Turning off in ${Math.max(1, Math.ceil(l.fade.remainingSec / 60))} min` : `Fading to ${l.fade.to}%`;
+  $('#status').innerHTML = `${esc(lampSummary(l))}<small>${esc(sub)}</small>`;
+}
+function control(action, immediate) {
+  holdUntil = Date.now() + 2500;
+  for (const l of targets()) {   // optimistic local update
+    if (action.power !== undefined) l.state = action.power;
+    if (action.dimming) { l.dimming = action.dimming; l.state = true; }
+    if (action.temp) { l.temp = action.temp; l.sceneId = 0; delete l.r; delete l.g; delete l.b; }
+    if (action.r !== undefined) { Object.assign(l, {r:action.r, g:action.g, b:action.b, sceneId:0, temp:0}); }
+    if (action.sceneId) { l.sceneId = action.sceneId; l.state = true; }
+    delete l.fade;
+  }
+  paintOrb();
+  clearTimeout(sendTimer);
+  sendTimer = setTimeout(async () => {
+    try { await api('/api/control', {target: sel, action}); } catch (e) { toast(e.message); }
+    setTimeout(() => refresh(), 500);
+  }, immediate ? 0 : 140);
+}
+
+/* ---------- views ---------- */
+function render() {
+  if (!S) return;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('#view').innerHTML = tab === 'lamp' ? lampView() : tab === 'routines' ? routinesView() : settingsView();
+  if (tab === 'lamp') paintOrb();
+}
+function header(title) {
+  const t = S.time;
+  return `<div class="top"><div><h1>${esc(title)}</h1><div class="sub">${t.synced ? esc(t.local) + ' · ' + DAY_NAMES[t.dow] : 'Waiting for clock…'}</div></div>
+    ${t.sunrise ? `<div class="sun">Sunrise ${t.sunrise}<br>Sunset ${t.sunset}</div>` : ''}</div>`;
+}
+function lampView() {
+  if (!S.lamps.length) return header("It's Automated") + `<div class="empty"><p>No lamps yet. Make sure the lamp is switched on at the wall and on the same Wi-Fi as this bridge.</p>
+    <button class="btn" data-do="discover">Find lamps</button></div>`;
+  const l = shown();
+  const picker = S.lamps.length > 1 ? `<div class="chips scroll" style="margin-top:12px"><button class="chip ${sel === 'all' ? 'on' : ''}" data-sel="all">All</button>
+    ${S.lamps.map(x => `<button class="chip ${sel === x.mac ? 'on' : ''}" data-sel="${esc(x.mac)}">${esc(x.name)}</button>`).join('')}</div>` : '';
+  const fadeOff = targets().some(x => x.fade && x.fade.off);
+  return header(S.lamps.length > 1 && sel === 'all' ? 'All lamps' : l.name) + picker + `
+  <div class="stage">
+    <button class="orb off" id="orb" data-do="power" aria-label="Toggle lamp">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 4v8M6.3 7.500a8 8 0 1 0 11.400 0"/></svg>
+    </button>
+    <div class="status" id="status"></div>
+  </div>
+  <div class="card">
+    <div class="label"><span>Brightness</span><b id="dimVal">${l.dimming || 50}%</b></div>
+    <input type="range" class="bright" id="dim" min="10" max="100" value="${l.dimming || 50}" aria-label="Brightness">
+    <div class="label" style="margin-top:12px"><span>Warmth</span><b id="tempVal">${l.temp ? l.temp + 'K' : '—'}</b></div>
+    <input type="range" class="warm" id="temp" min="2700" max="6500" step="100" value="${l.temp || 2700}" aria-label="Warmth">
+  </div>
+  <h2>My scenes</h2>
+  <div class="chips">${S.presets.map(p => `<button class="chip" data-preset="${esc(p.id)}">${esc(p.name)}</button>`).join('')}
+    <button class="chip ghost" data-do="presets">Edit</button></div>
+  <h2>Colour</h2>
+  <div class="swatches">${COLORS.map((c, i) => `<button class="sw" style="background:rgb(${c})" data-color="${i}" aria-label="Colour ${i + 1}"></button>`).join('')}</div>
+  <h2>WiZ scenes</h2>
+  <div class="chips scroll">${WIZ_SCENES.map(([id, n]) => `<button class="chip ${l.state && l.sceneId === id ? 'on' : ''}" data-scene="${id}">${n}</button>`).join('')}</div>
+  <h2>Sleep timer</h2>
+  ${fadeOff ? `<button class="btn sec" data-sleep="0">Cancel sleep timer</button>`
+    : `<div class="chips">${[15,30,60,90].map(m => `<button class="chip" data-sleep="${m}">${m} min</button>`).join('')}</div>
+       <div class="sub" style="margin-top:8px">Dims slowly, then switches off.</div>`}`;
+}
+
+function triggerText(r) {
+  const t = r.trigger || {};
+  if (t.type === 'time') return fmtTime(t.time);
+  const base = t.type === 'sunrise' ? S.time.sunrise : S.time.sunset, off = t.offset || 0;
+  const label = (t.type === 'sunrise' ? 'Sunrise' : 'Sunset') + (off ? ` ${off > 0 ? '+' : '−'}${Math.abs(off)} min` : '');
+  if (!base) return label;
+  const [h, m] = base.split(':').map(Number), tot = Math.min(1439, Math.max(0, h * 60 + m + off));
+  return `${label} (${fmtTime(String(Math.floor(tot / 60)).padStart(2, '0') + ':' + String(tot % 60).padStart(2, '0'))})`;
+}
+function fmtTime(t) {
+  if (!t) return '—';
+  const [h, m] = t.split(':').map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`;
+}
+function daysText(d) {
+  if (!d || !d.length || d.length === 7) return 'Every day';
+  const s = [...d].sort().join('');
+  if (s === '12345') return 'Weekdays';
+  if (s === '06') return 'Weekends';
+  return [...d].sort().map(i => DAY_NAMES[i]).join(' ');
+}
+function actionText(r) {
+  const a = r.action || {}, look = r.look || '';
+  let what;
+  if (a.power === false) what = 'Turn off';
+  else if (look.startsWith('preset:')) what = (S.presets.find(p => p.id === look.slice(7)) || {}).name || 'Scene';
+  else if (a.sceneId) what = sceneName(a.sceneId);
+  else what = `On ${a.dimming || 100}%`;
+  return what + (a.fadeMin ? ` · ${a.fadeMin} min fade` : '');
+}
+function routinesView() {
+  const list = S.routines.map(r => `<div class="card routine">
+      <button class="info" data-edit="${esc(r.id)}"><div class="name">${esc(r.name)}</div>
+        <div class="meta">${esc(triggerText(r))} · ${esc(daysText(r.days))}</div><div class="meta">${esc(actionText(r))}</div></button>
+      <button class="toggle ${r.enabled !== false ? 'on' : ''}" data-toggle="${esc(r.id)}" role="switch" aria-checked="${r.enabled !== false}" aria-label="Enable ${esc(r.name)}"></button>
+    </div>`).join('');
+  const starters = `<h2>Quick start</h2><div class="chips">
+      <button class="chip" data-starter="sunset">On at sunset</button>
+      <button class="chip" data-starter="bed">Bedtime fade</button>
+      <button class="chip" data-starter="wake">Wake-up light</button></div>`;
+  return header('Routines') + (S.time.synced ? '' : `<div class="banner">The bridge hasn't got the time from the internet yet, so routines are paused.</div>`)
+    + (S.lastRun ? `<div class="sub" style="margin:8px 2px">Last ran: ${esc(S.lastRun.name)}</div>` : '')
+    + `<div style="margin-top:14px">${list || `<div class="empty"><p>No routines yet. Start with one below.</p></div>`}</div>`
+    + starters + `<div class="btns"><button class="btn" data-edit="new">New routine</button></div>`;
+}
+function settingsView() {
+  const s = S.settings, d = S.device;
+  const known = CITIES.find(c => c[0] === s.city);
+  return header('Settings') + `
+  <h2>Lamps</h2>
+  ${S.lamps.map(l => `<div class="card row"><div><b>${esc(l.name)}</b><div class="sub">${esc(l.ip)} · ${l.online ? 'online' : 'offline'}</div></div>
+    <button class="btn sec small" data-lamp="${esc(l.mac)}">Edit</button></div>`).join('') || `<div class="sub">None found yet.</div>`}
+  <div class="btns"><button class="btn sec" data-do="discover">Find lamps</button><button class="btn sec" data-do="addip">Add by IP</button></div>
+  <h2>Location and time</h2>
+  <div class="card">
+    <label class="field"><span>City (for sunrise and sunset)</span><select id="city">
+      ${CITIES.map(c => `<option ${c[0] === s.city ? 'selected' : ''}>${c[0]}</option>`).join('')}<option value="custom" ${known ? '' : 'selected'}>Custom…</option></select></label>
+    <div id="custom" style="display:${known ? 'none' : 'block'}">
+      <label class="field"><span>Latitude</span><input type="number" step="0.0001" id="lat" value="${s.lat}"></label>
+      <label class="field"><span>Longitude</span><input type="number" step="0.0001" id="lon" value="${s.lon}"></label>
+    </div>
+    <label class="field"><span>UTC offset in minutes (India = 330)</span><input type="number" id="tz" value="${s.tzOffsetMin}"></label>
+    <div class="btns"><button class="btn sec" data-do="phonetz">Use phone's zone</button><button class="btn" data-do="savesettings">Save</button></div>
+  </div>
+  <h2>Bridge</h2>
+  <div class="card">
+    <div class="kv"><span>Address</span><b>${esc(d.host)} · ${esc(d.ip)}</b></div>
+    <div class="kv"><span>Wi-Fi</span><b>${esc(d.ssid)} (${d.rssi} dBm)</b></div>
+    <div class="kv"><span>Uptime</span><b>${Math.floor(d.uptime / 3600)} h ${Math.floor(d.uptime % 3600 / 60)} min</b></div>
+    <div class="kv"><span>Version</span><b>${esc(d.version)}</b></div>
+  </div>
+  <div class="btns"><button class="btn danger" data-do="wifireset">Change Wi-Fi network</button></div>`;
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html) { $('#sheet').innerHTML = html; $('#scrim').classList.add('open'); }
+function closeSheet() { $('#scrim').classList.remove('open'); $('#sheet').innerHTML = ''; }
+
+let draft = null;
+function newRoutine(kind) {
+  const r = {id: 'r' + Date.now().toString(36), name: 'New routine', enabled: true, trigger: {type: 'time', time: '19:00', offset: 0},
+    days: [0,1,2,3,4,5,6], target: 'all', look: 'white', action: {power: true, dimming: 80, temp: 2700, fadeMin: 0}};
+  if (kind === 'sunset') Object.assign(r, {name: 'On at sunset', trigger: {type: 'sunset', time: '18:00', offset: -15}});
+  if (kind === 'bed') Object.assign(r, {name: 'Bedtime fade', trigger: {type: 'time', time: '23:00', offset: 0}, look: 'off', action: {power: false, fadeMin: 15}});
+  if (kind === 'wake') Object.assign(r, {name: 'Wake-up light', trigger: {type: 'time', time: '06:30', offset: 0}, days: [1,2,3,4,5], action: {power: true, dimming: 100, temp: 4000, fadeMin: 15}});
+  return r;
+}
+function editRoutine(r, isNew) {
+  draft = JSON.parse(JSON.stringify(r)); draft._new = isNew;
+  const t = draft.trigger, a = draft.action;
+  const offs = [-120,-90,-60,-45,-30,-15,0,15,30,45,60,90,120];
+  openSheet(`<h3>${isNew ? 'New routine' : 'Edit routine'}</h3>
+    <label class="field"><span>Name</span><input type="text" id="rName" maxlength="32" value="${esc(draft.name)}"></label>
+    <div class="field"><span>When</span><div class="seg" id="rType">${['time','sunrise','sunset'].map(k =>
+      `<button type="button" data-type="${k}" class="${t.type === k ? 'on' : ''}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div></div>
+    <label class="field" id="rTimeF"><span>Time</span><input type="time" id="rTime" value="${esc(t.time || '19:00')}"></label>
+    <label class="field" id="rOffF"><span>Offset</span><select id="rOff">${offs.map(o =>
+      `<option value="${o}" ${o === (t.offset || 0) ? 'selected' : ''}>${o === 0 ? 'Exactly at that moment' : Math.abs(o) + ' min ' + (o < 0 ? 'before' : 'after')}</option>`).join('')}</select></label>
+    <div class="field"><span>Days</span><div class="days" id="rDays">${DAYS.map((d, i) =>
+      `<button type="button" data-day="${i}" class="${draft.days.includes(i) ? 'on' : ''}" aria-label="${DAY_NAMES[i]}">${d}</button>`).join('')}</div></div>
+    ${S.lamps.length > 1 ? `<label class="field"><span>Lamp</span><select id="rTarget"><option value="all">All lamps</option>${S.lamps.map(l =>
+      `<option value="${esc(l.mac)}" ${draft.target === l.mac ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select></label>` : ''}
+    <label class="field"><span>What happens</span><select id="rLook">
+      <option value="white">Turn on (white light)</option>
+      <optgroup label="My scenes">${S.presets.map(p => `<option value="preset:${esc(p.id)}">${esc(p.name)}</option>`).join('')}</optgroup>
+      <optgroup label="WiZ scenes">${WIZ_SCENES.map(([id, n]) => `<option value="wiz:${id}">${n}</option>`).join('')}</optgroup>
+      <option value="off">Turn off</option></select></label>
+    <div id="rLevels">
+      <div class="label"><span>Brightness</span><b id="rDimVal">${a.dimming || 80}%</b></div>
+      <input type="range" class="bright" id="rDim" min="10" max="100" value="${a.dimming || 80}" aria-label="Brightness">
+      <div id="rTempWrap"><div class="label" style="margin-top:12px"><span>Warmth</span><b id="rTempVal">${a.temp || 2700}K</b></div>
+      <input type="range" class="warm" id="rTemp" min="2700" max="6500" step="100" value="${a.temp || 2700}" aria-label="Warmth"></div>
+    </div>
+    <label class="field" style="margin-top:14px"><span>Fade</span><select id="rFade">${[0,1,5,10,15,30,60].map(m =>
+      `<option value="${m}" ${m === (a.fadeMin || 0) ? 'selected' : ''}>${m ? 'Over ' + m + ' min' : 'Instant'}</option>`).join('')}</select></label>
+    <div class="btns"><button class="btn sec" data-do="close">Cancel</button><button class="btn" data-do="saveroutine">Save</button></div>
+    ${isNew ? '' : `<div class="btns"><button class="btn sec" data-do="runroutine">Run now</button><button class="btn danger" data-do="delroutine">Delete</button></div>`}`);
+  $('#rLook').value = draft.look || 'white';
+  syncRoutineForm();
+}
+function syncRoutineForm() {
+  const type = draft.trigger.type, look = $('#rLook').value;
+  $('#rTimeF').style.display = type === 'time' ? '' : 'none';
+  $('#rOffF').style.display = type === 'time' ? 'none' : '';
+  $('#rLevels').style.display = look === 'white' || look.startsWith('wiz:') ? '' : 'none';
+  $('#rTempWrap').style.display = look === 'white' ? '' : 'none';
+}
+function readRoutine() {
+  const look = $('#rLook').value, fadeMin = +$('#rFade').value;
+  let action;
+  if (look === 'off') action = {power: false, fadeMin};
+  else if (look === 'white') action = {power: true, dimming: +$('#rDim').value, temp: +$('#rTemp').value, fadeMin};
+  else if (look.startsWith('wiz:')) action = {power: true, sceneId: +look.slice(4), dimming: +$('#rDim').value, fadeMin};
+  else { const p = S.presets.find(x => x.id === look.slice(7)) || {}; action = {power: true, fadeMin};
+    for (const k of ['dimming','temp','r','g','b','sceneId']) if (p[k] !== undefined) action[k] = p[k]; }
+  const tgt = $('#rTarget');
+  return {id: draft.id, name: $('#rName').value.trim() || 'Routine', enabled: draft.enabled !== false,
+    trigger: {type: draft.trigger.type, time: $('#rTime').value || '19:00', offset: +$('#rOff').value},
+    days: [...draft.days].sort(), target: tgt ? tgt.value : (draft.target || 'all'), look, action};
+}
+const saveRoutines = list => api('/api/routines', {routines: list});
+
+function presetsSheet() {
+  openSheet(`<h3>My scenes</h3>
+    ${S.presets.map(p => `<div class="row" style="padding:8px 0"><div><b>${esc(p.name)}</b><div class="sub">${p.sceneId ? esc(sceneName(p.sceneId)) : p.r !== undefined ? 'Colour' : (p.temp || '') + 'K'} · ${p.dimming || 100}%</div></div>
+      <button class="btn danger small" data-delpreset="${esc(p.id)}">Remove</button></div>`).join('') || '<div class="sub">No saved scenes.</div>'}
+    <label class="field" style="margin-top:16px"><span>Save the lamp's current look as</span><input type="text" id="pName" maxlength="20" placeholder="e.g. Reading"></label>
+    <div class="btns"><button class="btn sec" data-do="close">Done</button><button class="btn" data-do="addpreset">Save scene</button></div>`);
+}
+function lampSheet(mac) {
+  const l = S.lamps.find(x => x.mac === mac); if (!l) return;
+  draft = {mac};
+  openSheet(`<h3>Lamp</h3><label class="field"><span>Name</span><input type="text" id="lName" maxlength="32" value="${esc(l.name)}"></label>
+    <div class="kv"><span>MAC</span><b>${esc(l.mac)}</b></div><div class="kv"><span>IP</span><b>${esc(l.ip)}</b></div>
+    <div class="btns"><button class="btn sec" data-do="close">Cancel</button><button class="btn" data-do="savelamp">Save</button></div>
+    <div class="btns"><button class="btn danger" data-do="dellamp">Remove lamp</button></div>`);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) { if (e.target.id === 'scrim') closeSheet(); return; }
+  const d = b.dataset;
+  if (d.tab) { tab = d.tab; holdUntil = 0; render(); window.scrollTo(0, 0); return; }
+  if (!S) return;
+  if (d.sel) { sel = d.sel; holdUntil = 0; render(); return; }
+  if (d.preset) { const p = S.presets.find(x => x.id === d.preset); if (p) { const a = {power: true}; for (const k of ['dimming','temp','r','g','b','sceneId']) if (p[k] !== undefined) a[k] = p[k]; control(a, true); toast(p.name); } return; }
+  if (d.color) { const [r, g, bl] = COLORS[+d.color]; control({power: true, r, g, b: bl}, true); return; }
+  if (d.scene) { control({power: true, sceneId: +d.scene}, true); return; }
+  if (d.sleep !== undefined) { const m = +d.sleep; return act(() => api('/api/sleep', {target: sel, minutes: m}), m ? `Lamp will be off in ${m} min` : 'Sleep timer cancelled'); }
+  if (d.edit) { const r = d.edit === 'new' ? newRoutine() : S.routines.find(x => x.id === d.edit); if (r) editRoutine(r, d.edit === 'new'); return; }
+  if (d.starter) return editRoutine(newRoutine(d.starter), true);
+  if (d.toggle) { const list = S.routines.map(r => r.id === d.toggle ? {...r, enabled: r.enabled === false} : r); return act(() => saveRoutines(list)); }
+  if (d.type) { draft.trigger.type = d.type; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); return syncRoutineForm(); }
+  if (d.day !== undefined) { const i = +d.day, at = draft.days.indexOf(i); at < 0 ? draft.days.push(i) : draft.days.splice(at, 1); b.classList.toggle('on'); return; }
+  if (d.lamp) return lampSheet(d.lamp);
+  if (d.delpreset) { const list = S.presets.filter(p => p.id !== d.delpreset); await act(() => api('/api/presets', {presets: list})); return presetsSheet(); }
+  switch (d.do) {
+    case 'close': return closeSheet();
+    case 'power': { const l = shown(); return control({power: !(l.online && l.state)}, true); }
+    case 'discover': toast('Looking for lamps…'); return act(async () => { const r = await api('/api/discover', {}); toast(r.found ? `Found ${r.found} lamp${r.found > 1 ? 's' : ''}` : 'No lamps answered. Is it switched on at the wall?'); });
+    case 'addip': draft = {}; return openSheet(`<h3>Add lamp by IP</h3><label class="field"><span>IP address (see your router or the WiZ app)</span><input type="text" id="ipAddr" inputmode="decimal" placeholder="192.168.1.50"></label>
+        <div class="btns"><button class="btn sec" data-do="close">Cancel</button><button class="btn" data-do="saveip">Add</button></div>`);
+    case 'saveip': { const ip = $('#ipAddr').value.trim(); closeSheet(); return act(() => api('/api/lamps/add', {ip}), 'Lamp added'); }
+    case 'presets': return presetsSheet();
+    case 'addpreset': { const name = $('#pName').value.trim(), l = shown(); if (!name) return toast('Give the scene a name');
+        if (!l || !l.online) return toast('Lamp is offline');
+        const p = {id: 'p' + Date.now().toString(36), name, dimming: l.dimming || 100};
+        if (l.sceneId) p.sceneId = l.sceneId; else if (l.r !== undefined) Object.assign(p, {r: l.r, g: l.g, b: l.b}); else p.temp = l.temp || 2700;
+        closeSheet(); return act(() => api('/api/presets', {presets: [...S.presets, p]}), 'Scene saved'); }
+    case 'saveroutine': { const r = readRoutine(); if (!r.days.length) return toast('Pick at least one day');
+        const list = draft._new ? [...S.routines, r] : S.routines.map(x => x.id === r.id ? r : x);
+        closeSheet(); return act(() => saveRoutines(list), 'Routine saved'); }
+    case 'delroutine': { const id = draft.id; closeSheet(); return act(() => saveRoutines(S.routines.filter(x => x.id !== id)), 'Routine deleted'); }
+    case 'runroutine': { const id = draft.id; closeSheet(); return act(() => api('/api/routines/run', {id}), 'Routine started'); }
+    case 'savelamp': { const body = {mac: draft.mac, name: $('#lName').value.trim()}; closeSheet(); return act(() => api('/api/lamps/update', body), 'Saved'); }
+    case 'dellamp': { const mac = draft.mac; closeSheet(); return act(() => api('/api/lamps/remove', {mac}), 'Lamp removed'); }
+    case 'phonetz': $('#tz').value = -new Date().getTimezoneOffset(); return;
+    case 'savesettings': { const c = $('#city').value, known = CITIES.find(x => x[0] === c);
+        const body = {city: known ? c : 'Custom', lat: known ? known[1] : +$('#lat').value, lon: known ? known[2] : +$('#lon').value, tzOffsetMin: Math.round(+$('#tz').value)};
+        if ([body.lat, body.lon, body.tzOffsetMin].some(Number.isNaN)) return toast('Check the numbers');
+        return act(() => api('/api/settings', body), 'Saved'); }
+    case 'wifireset': return openSheet(`<h3>Change Wi-Fi network?</h3><p class="sub">The bridge forgets its Wi-Fi and restarts. Join the “Its-Automated-Setup” hotspot from your phone to pick a new network. Lamps and routines are kept.</p>
+        <div class="btns"><button class="btn sec" data-do="close">Cancel</button><button class="btn danger" data-do="wifiresetgo">Forget Wi-Fi</button></div>`);
+    case 'wifiresetgo': closeSheet(); try { await api('/api/wifi/reset', {}); } catch (e) {} return toast('Bridge is restarting');
+  }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'dim') { $('#dimVal').textContent = t.value + '%'; control({power: true, dimming: +t.value}); }
+  if (t.id === 'temp') { $('#tempVal').textContent = t.value + 'K'; control({power: true, temp: +t.value}); }
+  if (t.id === 'rDim') $('#rDimVal').textContent = t.value + '%';
+  if (t.id === 'rTemp') $('#rTempVal').textContent = t.value + 'K';
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'rLook') syncRoutineForm();
+  if (e.target.id === 'city') $('#custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+});
+document.addEventListener('pointerdown', e => { if (e.target.type === 'range') holdUntil = Date.now() + 4000; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+setInterval(() => { if (!document.hidden) refresh(); }, 5000);
+refresh(true);
+</script>
+</body>
+</html>

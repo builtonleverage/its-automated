@@ -1,0 +1,7 @@
+.pio/
+.vscode/
+src/web_assets.h
+node_modules/
+site/
+*.pyc
+.DS_Store

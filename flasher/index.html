@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install It's Automated on an ESP32</title>
+<style>
+  body{font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#14110f;color:#f4ede4;margin:0;padding:40px 20px}
+  main{max-width:620px;margin:0 auto}
+  h1{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
+  p,li{color:#cfc4b6} a{color:#ffb347}
+  ol{padding-left:22px} li{margin:8px 0}
+  .box{background:#1f1b18;border:1px solid #3a322c;border-radius:16px;padding:20px;margin:24px 0}
+  code{background:#2a2420;padding:2px 6px;border-radius:6px;font-size:15px}
+</style>
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+</head>
+<body>
+<main>
+  <h1>Install It's Automated</h1>
+  <p>Flash the open-source WiZ lamp bridge onto an ESP32 straight from this page. Needs Chrome or Edge on a laptop or desktop (phones can't flash over USB).</p>
+  <div class="box">
+    <ol>
+      <li>Plug the ESP32 into your computer with a micro-USB <b>data</b> cable.</li>
+      <li>Click Install and pick the serial port (usually "CP2102" or "USB to UART").</li>
+      <li>If it can't connect, hold the <b>BOOT</b> button on the board while it starts.</li>
+    </ol>
+    <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
+  </div>
+  <p>After flashing: on your phone, join the Wi-Fi hotspot <code>Its-Automated-Setup</code>, choose your home Wi-Fi, then open <code>http://its-automated.local</code>.</p>
+  <p>Source and full instructions: <a href="https://github.com/builtonleverage/its-automated">github.com/builtonleverage/its-automated</a></p>
+</main>
+</body>
+</html>
